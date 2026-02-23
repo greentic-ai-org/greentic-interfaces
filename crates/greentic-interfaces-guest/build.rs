@@ -475,6 +475,11 @@ const WORLD_FEATURES: &[WorldFeature] = &[
         feature: "provider-core-v1",
     },
     WorldFeature {
+        package: "greentic:operator@1.0.0",
+        world: "hook-provider",
+        feature: "operator-hooks-v1",
+    },
+    WorldFeature {
         package: "greentic:state@1.0.0",
         world: "store",
         feature: "state-store",

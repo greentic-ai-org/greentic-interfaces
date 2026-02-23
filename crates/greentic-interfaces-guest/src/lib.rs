@@ -185,6 +185,12 @@ pub mod provider_core {
     pub use crate::bindings::greentic_provider_schema_core_1_0_0_schema_core::exports::greentic::provider_schema_core::schema_core_api::*;
 }
 
+/// Operator hook-provider exports for `greentic:operator/hook-provider@1.0.0`.
+#[cfg(feature = "operator-hooks-v1")]
+pub mod operator_hooks {
+    pub use crate::bindings::greentic_operator_1_0_0_hook_provider::exports::greentic::operator::hook_api::*;
+}
+
 /// Shared messaging provider metadata/render helpers `provider:common/common@0.0.2`.
 #[cfg(feature = "provider-common")]
 pub mod provider_common {

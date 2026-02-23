@@ -56,6 +56,11 @@ pub mod runner_host_v1 {
     pub use greentic_interfaces::runner_host_v1::*;
 }
 
+/// Operator hook contracts `greentic:operator/hook-provider@1.0.0`.
+pub mod operator_v1 {
+    pub use greentic_interfaces::operator_hook_provider_v1::*;
+}
+
 /// Pack exporters.
 pub mod pack_exports {
     /// Pack exports `0.2.0` world.

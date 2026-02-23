@@ -30,6 +30,7 @@ oauth-broker = []
 worker = []
 repo = []
 provider-core-v1 = []
+operator-hooks-v1 = []
 scan = []
 signing = []
 attestation = []
@@ -70,6 +71,7 @@ guest = [
     "worker",
     "repo",
     "provider-core-v1",
+    "operator-hooks-v1",
     "scan",
     "signing",
     "attestation",
