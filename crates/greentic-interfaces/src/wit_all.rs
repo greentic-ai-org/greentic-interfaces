@@ -397,6 +397,17 @@ declare_world!(
     }
 );
 
+#[cfg(feature = "operator-hooks-v1")]
+declare_world!(
+    mod operator_hook_provider_v1,
+    path = "target/wit-staging/greentic-operator-1.0.0",
+    world = "greentic:operator/hook-provider@1.0.0",
+    legacy = {
+        /// Canonical package identifier.
+        pub const PACKAGE_ID: &str = "greentic:operator@1.0.0";
+    }
+);
+
 #[cfg(feature = "pack-export-v0-2")]
 declare_world!(
     mod pack_export_v0_2,
