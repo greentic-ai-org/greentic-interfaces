@@ -10,6 +10,10 @@ use wasmtime::component::{Linker, ResourceTable};
 use wasmtime::{Config, Engine, Store};
 use wasmtime_wasi::{WasiCtx, WasiCtxBuilder, WasiCtxView, WasiView, p2};
 
+fn wt<T>(result: wasmtime::Result<T>) -> Result<T> {
+    result.map_err(|err| anyhow::anyhow!("{err}"))
+}
+
 fn main() -> Result<()> {
     let component_path = ensure_component_artifact()?;
     let bytes = std::fs::read(&component_path)
@@ -17,16 +21,19 @@ fn main() -> Result<()> {
 
     let mut config = Config::new();
     config.wasm_component_model(true);
-    let engine = Engine::new(&config)?;
+    let engine = wt(Engine::new(&config))?;
 
-    let component = component_v1_0::Component::instantiate(&engine, &bytes)?;
+    let component = wt(component_v1_0::Component::instantiate(&engine, &bytes))?;
     let mut linker = Linker::new(&engine);
 
-    p2::add_to_linker_sync(&mut linker)?;
-    runner_host_v1::add_to_linker(&mut linker, |state: &mut AppState| &mut state.host)?;
+    wt(p2::add_to_linker_sync(&mut linker))?;
+    wt(runner_host_v1::add_to_linker(
+        &mut linker,
+        |state: &mut AppState| &mut state.host,
+    ))?;
 
     let mut store = Store::new(&engine, AppState::new()?);
-    let instance = linker.instantiate(&mut store, &component)?;
+    let instance = wt(linker.instantiate(&mut store, &component))?;
     let iface_idx = instance
         .get_export_index(&mut store, None, "greentic:component/describe-v1@1.0.0")
         .context("describe-v1 interface not exported")?;
@@ -37,8 +44,9 @@ fn main() -> Result<()> {
 
     let describe = instance
         .get_typed_func::<(), (String,)>(&mut store, func_idx)
+        .map_err(|err| anyhow::anyhow!("{err}"))
         .context("describe-json export not found")?;
-    let (payload,) = describe.call(&mut store, ())?;
+    let (payload,) = wt(describe.call(&mut store, ()))?;
 
     // Ensure the JSON is at least well-formed.
     let json: Value = serde_json::from_str(&payload)?;

@@ -7,6 +7,10 @@ use greentic_interfaces_wasmtime::{
 use wasmtime::component::Linker;
 use wasmtime::{Config, Engine};
 
+fn wt<T>(result: wasmtime::Result<T>) -> Result<T> {
+    result.map_err(|err| anyhow::anyhow!("{err}"))
+}
+
 struct DummySecrets;
 
 impl SecretsStoreHost for DummySecrets {
@@ -26,10 +30,13 @@ struct HostState {
 fn secrets_store_helper_wires_linker() -> Result<()> {
     let mut config = Config::new();
     config.wasm_component_model(true);
-    let engine = Engine::new(&config)?;
+    let engine = wt(Engine::new(&config))?;
     let mut linker: Linker<HostState> = Linker::new(&engine);
 
-    add_secrets_store_to_linker(&mut linker, |state: &mut HostState| &mut state.secrets)?;
+    wt(add_secrets_store_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.secrets,
+    ))?;
 
     Ok(())
 }
@@ -63,10 +70,13 @@ struct HostStateV1_1 {
 fn secrets_store_v1_1_helper_wires_linker() -> Result<()> {
     let mut config = Config::new();
     config.wasm_component_model(true);
-    let engine = Engine::new(&config)?;
+    let engine = wt(Engine::new(&config))?;
     let mut linker: Linker<HostStateV1_1> = Linker::new(&engine);
 
-    add_secrets_store_v1_1_to_linker(&mut linker, |state: &mut HostStateV1_1| &mut state.secrets)?;
+    wt(add_secrets_store_v1_1_to_linker(
+        &mut linker,
+        |state: &mut HostStateV1_1| &mut state.secrets,
+    ))?;
 
     Ok(())
 }

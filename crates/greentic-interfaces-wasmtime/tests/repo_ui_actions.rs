@@ -12,6 +12,10 @@ use greentic_interfaces_wasmtime::repo_ui_actions_repo_ui_worker_v1_0::RepoUiWor
 
 const COMPONENT_PATH: &str = "tests/assets/repo_ui_actions_dummy.component.wasm";
 
+fn wt<T>(result: wasmtime::Result<T>) -> Result<T> {
+    result.map_err(|err| anyhow::anyhow!("{err}"))
+}
+
 #[derive(Default)]
 struct HostState {
     table: ResourceTable,
@@ -44,8 +48,8 @@ fn repo_ui_actions_component_round_trip() -> Result<()> {
 
     let mut config = Config::new();
     config.wasm_component_model(true);
-    let engine = Engine::new(&config)?;
-    let component = Component::from_binary(&engine, &component_bytes)?;
+    let engine = wt(Engine::new(&config))?;
+    let component = wt(Component::from_binary(&engine, &component_bytes))?;
     let mut store = Store::new(
         &engine,
         HostState {
@@ -54,9 +58,9 @@ fn repo_ui_actions_component_round_trip() -> Result<()> {
         },
     );
     let mut linker = Linker::new(&engine);
-    p2::add_to_linker_sync(&mut linker)?;
+    wt(p2::add_to_linker_sync(&mut linker))?;
 
-    let bindings = RepoUiWorker::instantiate(&mut store, &component, &linker)?;
+    let bindings = wt(RepoUiWorker::instantiate(&mut store, &component, &linker))?;
     let ui = bindings.greentic_repo_ui_actions_ui_action_api();
     let tenant = "tenant-a".to_string();
     let page = "repositories".to_string();
@@ -64,7 +68,9 @@ fn repo_ui_actions_component_round_trip() -> Result<()> {
     let input = ActionInput {
         payload: "hello".to_string(),
     };
-    let result = ui.call_handle_action(&mut store, &tenant, &page, &action, &input)?;
+    let result = ui
+        .call_handle_action(&mut store, &tenant, &page, &action, &input)
+        .map_err(|err| anyhow::anyhow!("{err}"))?;
 
     assert!(result.success);
     assert_eq!(result.payload.as_deref(), Some("hello"));

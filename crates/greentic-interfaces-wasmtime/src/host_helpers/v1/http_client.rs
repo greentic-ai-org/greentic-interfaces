@@ -20,7 +20,7 @@ pub type ImpersonationV1_1 =
 pub fn add_http_client_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn HttpClientHost,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:http/http-client@1.0.0")?;
     instance.func_wrap(
         "send",
@@ -40,7 +40,7 @@ pub fn add_http_client_to_linker<T>(
 pub fn add_http_client_compat_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn HttpClientHostV1_1,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     // New world exports the full surface.
     let mut inst_v1_1 = linker.instance("greentic:http/http-client@1.1.0")?;
     inst_v1_1.func_wrap(

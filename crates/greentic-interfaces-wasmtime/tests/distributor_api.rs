@@ -14,6 +14,10 @@ use greentic_interfaces_wasmtime::distributor_distributor_api_v1_0::DistributorA
 
 const COMPONENT_PATH: &str = "tests/assets/distributor_api_dummy.component.wasm";
 
+fn wt<T>(result: wasmtime::Result<T>) -> Result<T> {
+    result.map_err(|err| anyhow::anyhow!("{err}"))
+}
+
 #[derive(Default)]
 struct HostState {
     table: ResourceTable,
@@ -46,8 +50,8 @@ fn distributor_api_component_round_trip() -> Result<()> {
 
     let mut config = Config::new();
     config.wasm_component_model(true);
-    let engine = Engine::new(&config)?;
-    let component = Component::from_binary(&engine, &component_bytes)?;
+    let engine = wt(Engine::new(&config))?;
+    let component = wt(Component::from_binary(&engine, &component_bytes))?;
     let mut store = Store::new(
         &engine,
         HostState {
@@ -56,9 +60,9 @@ fn distributor_api_component_round_trip() -> Result<()> {
         },
     );
     let mut linker = Linker::new(&engine);
-    p2::add_to_linker_sync(&mut linker)?;
+    wt(p2::add_to_linker_sync(&mut linker))?;
 
-    let bindings = DistributorApi::instantiate(&mut store, &component, &linker)?;
+    let bindings = wt(DistributorApi::instantiate(&mut store, &component, &linker))?;
     let api = bindings.greentic_distributor_api_distributor();
 
     let req = ResolveComponentRequest {
@@ -70,7 +74,9 @@ fn distributor_api_component_round_trip() -> Result<()> {
         extra: "{}".to_string(),
     };
 
-    let resp = api.call_resolve_component(&mut store, &req)?;
+    let resp = api
+        .call_resolve_component(&mut store, &req)
+        .map_err(|err| anyhow::anyhow!("{err}"))?;
     assert!(matches!(resp.component_status, ComponentStatus::Ready));
     assert!(resp.digest.starts_with("sha256:"));
     assert_eq!(resp.artifact_location.kind, "file");
@@ -86,14 +92,19 @@ fn distributor_api_component_round_trip() -> Result<()> {
     let tenant = "tenant-a".to_string();
     let env = "env-a".to_string();
     let pack = "pack-a".to_string();
-    let status = api.call_get_pack_status(&mut store, &tenant, &env, &pack)?;
+    let status = api
+        .call_get_pack_status(&mut store, &tenant, &env, &pack)
+        .map_err(|err| anyhow::anyhow!("{err}"))?;
     assert_eq!(status, "\"ok\"");
-    let status_v2 = api.call_get_pack_status_v2(&mut store, &tenant, &env, &pack)?;
+    let status_v2 = api
+        .call_get_pack_status_v2(&mut store, &tenant, &env, &pack)
+        .map_err(|err| anyhow::anyhow!("{err}"))?;
     assert_eq!(status_v2.status, "ok");
     assert!(status_v2.secret_requirements.is_empty());
     assert_eq!(status_v2.extra, "{}");
 
-    api.call_warm_pack(&mut store, &tenant, &env, &pack)?;
+    api.call_warm_pack(&mut store, &tenant, &env, &pack)
+        .map_err(|err| anyhow::anyhow!("{err}"))?;
 
     Ok(())
 }

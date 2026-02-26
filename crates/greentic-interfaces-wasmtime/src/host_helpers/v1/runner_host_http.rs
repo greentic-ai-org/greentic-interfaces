@@ -7,7 +7,7 @@ pub use bindings::Host as RunnerHostHttp;
 pub fn add_runner_host_http_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn RunnerHostHttp,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:host/http-v1@1.0.0")?;
     instance.func_wrap(
         "request",

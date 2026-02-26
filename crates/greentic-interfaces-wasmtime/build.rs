@@ -161,7 +161,7 @@ fn main() {
                         pub fn instantiate(
                             engine: &wasmtime::Engine,
                             component_wasm: &[u8],
-                        ) -> anyhow::Result<wasmtime::component::Component> {
+                        ) -> wasmtime::Result<wasmtime::component::Component> {
                             let component = wasmtime::component::Component::from_binary(engine, component_wasm)?;
                             Ok(component)
                         }

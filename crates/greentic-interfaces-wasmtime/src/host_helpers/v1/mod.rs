@@ -34,7 +34,7 @@ pub struct HostFns<T> {
 pub fn add_all_v1_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     fns: HostFns<T>,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     if let Some(get) = fns.http_client_v1_1 {
         http_client::add_http_client_compat_to_linker(linker, get)?;
     } else if let Some(get) = fns.http_client {

@@ -7,7 +7,7 @@ pub use bindings::Host as OAuthBrokerHost;
 pub fn add_oauth_broker_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn OAuthBrokerHost,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:oauth-broker/broker-v1@1.0.0")?;
     instance.func_wrap(
         "get-consent-url",

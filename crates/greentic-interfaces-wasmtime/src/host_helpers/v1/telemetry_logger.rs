@@ -8,7 +8,7 @@ pub use bindings::{HostError as TelemetryLoggerError, OpAck, SpanContext, Tenant
 pub fn add_telemetry_logger_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn TelemetryLoggerHost,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:telemetry/logger-api@1.0.0")?;
     instance.func_wrap(
         "log",

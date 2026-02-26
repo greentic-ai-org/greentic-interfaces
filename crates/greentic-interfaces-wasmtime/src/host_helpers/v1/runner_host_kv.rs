@@ -7,7 +7,7 @@ pub use bindings::Host as RunnerHostKv;
 pub fn add_runner_host_kv_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn RunnerHostKv,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:host/kv-v1@1.0.0")?;
     instance.func_wrap(
         "get",

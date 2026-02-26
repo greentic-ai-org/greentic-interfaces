@@ -5,7 +5,7 @@ fn modules_exist_and_can_compile() {
         use greentic_interfaces_wasmtime::component_v0_5::Component as _ComponentShim;
         let _instantiate = |_engine: &wasmtime::Engine,
                             bytes: &[u8]|
-         -> anyhow::Result<wasmtime::component::Component> {
+         -> wasmtime::Result<wasmtime::component::Component> {
             _ComponentShim::instantiate(_engine, bytes)
         };
 

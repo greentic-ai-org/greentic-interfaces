@@ -8,7 +8,7 @@ pub use bindings::{HostError as StateStoreError, OpAck, StateKey, TenantCtx};
 pub fn add_state_store_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn StateStoreHost,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:state/state-store@1.0.0")?;
     instance.func_wrap(
         "read",

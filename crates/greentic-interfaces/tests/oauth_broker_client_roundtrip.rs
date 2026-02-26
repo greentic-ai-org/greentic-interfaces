@@ -18,6 +18,10 @@ mod harness_bindings {
 
 use harness_bindings::Harness;
 
+fn wt<T>(result: wasmtime::Result<T>) -> anyhow::Result<T> {
+    result.map_err(|err| anyhow::anyhow!("{err}"))
+}
+
 struct BrokerHost;
 
 impl BrokerHost {
@@ -112,20 +116,23 @@ fn broker_client_imports_roundtrip() -> anyhow::Result<()> {
 
     let wasm_path = build_guest_component()?;
     let engine = new_component_engine()?;
-    let component = Component::from_file(&engine, &wasm_path)?;
+    let component = wt(Component::from_file(&engine, &wasm_path))?;
     let mut linker = Linker::new(&engine);
-    harness_bindings::test::oauth_broker_client_harness::broker_v1::add_to_linker::<
-        _,
-        HasSelf<HostState>,
-    >(&mut linker, |state| state)?;
-    p2::add_to_linker_sync(&mut linker)?;
+    wt(
+        harness_bindings::test::oauth_broker_client_harness::broker_v1::add_to_linker::<
+            _,
+            HasSelf<HostState>,
+        >(&mut linker, |state| state),
+    )?;
+    wt(p2::add_to_linker_sync(&mut linker))?;
 
     let mut store = Store::new(&engine, HostState::new()?);
-    let instance = linker.instantiate(&mut store, &component)?;
-    let harness = Harness::new(&mut store, &instance)?;
+    let instance = wt(linker.instantiate(&mut store, &component))?;
+    let harness = wt(Harness::new(&mut store, &instance))?;
     let results = harness
         .test_oauth_broker_client_harness_harness_api()
-        .call_run(&mut store)?;
+        .call_run(&mut store)
+        .map_err(|err| anyhow::anyhow!("{err}"))?;
 
     assert_eq!(
         results,
@@ -182,5 +189,5 @@ fn build_guest_component() -> anyhow::Result<PathBuf> {
 fn new_component_engine() -> anyhow::Result<Engine> {
     let mut config = Config::new();
     config.wasm_component_model(true);
-    Engine::new(&config)
+    wt(Engine::new(&config))
 }

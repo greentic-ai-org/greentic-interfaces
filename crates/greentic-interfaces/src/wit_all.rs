@@ -107,7 +107,8 @@ declare_world!(
                 engine: &wasmtime::Engine,
                 component_wasm: &[u8],
             ) -> AnyResult<WasmtimeComponent> {
-                Ok(WasmtimeComponent::from_binary(engine, component_wasm)?)
+                WasmtimeComponent::from_binary(engine, component_wasm)
+                    .map_err(|err| anyhow::anyhow!("{err}"))
             }
         }
 
@@ -183,7 +184,8 @@ declare_world!(
                 engine: &wasmtime::Engine,
                 component_wasm: &[u8],
             ) -> AnyResult<WasmtimeComponent> {
-                Ok(WasmtimeComponent::from_binary(engine, component_wasm)?)
+                WasmtimeComponent::from_binary(engine, component_wasm)
+                    .map_err(|err| anyhow::anyhow!("{err}"))
             }
         }
 
@@ -259,7 +261,8 @@ declare_world!(
                 engine: &wasmtime::Engine,
                 component_wasm: &[u8],
             ) -> AnyResult<WasmtimeComponent> {
-                Ok(WasmtimeComponent::from_binary(engine, component_wasm)?)
+                WasmtimeComponent::from_binary(engine, component_wasm)
+                    .map_err(|err| anyhow::anyhow!("{err}"))
             }
         }
 

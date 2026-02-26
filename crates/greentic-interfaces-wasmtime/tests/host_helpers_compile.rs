@@ -6,6 +6,10 @@ use greentic_interfaces_wasmtime::host_helpers::v1::{
 use wasmtime::component::Linker;
 use wasmtime::{Config, Engine};
 
+fn wt<T>(result: wasmtime::Result<T>) -> Result<T> {
+    result.map_err(|err| anyhow::anyhow!("{err}"))
+}
+
 struct DummyHttpClient;
 impl http_client::HttpClientHost for DummyHttpClient {
     fn send(
@@ -194,32 +198,44 @@ struct HostState {
 fn host_helpers_compile() -> Result<()> {
     let mut config = Config::new();
     config.wasm_component_model(true);
-    let engine = Engine::new(&config)?;
+    let engine = wt(Engine::new(&config))?;
     let mut linker: Linker<HostState> = Linker::new(&engine);
 
-    http_client::add_http_client_to_linker(&mut linker, |state: &mut HostState| &mut state.http)?;
-    oauth_broker::add_oauth_broker_to_linker(&mut linker, |state: &mut HostState| {
-        &mut state.oauth
-    })?;
-    runner_host_http::add_runner_host_http_to_linker(&mut linker, |state: &mut HostState| {
-        &mut state.runner_http
-    })?;
-    runner_host_kv::add_runner_host_kv_to_linker(&mut linker, |state: &mut HostState| {
-        &mut state.runner_kv
-    })?;
-    telemetry_logger::add_telemetry_logger_to_linker(&mut linker, |state: &mut HostState| {
-        &mut state.telemetry
-    })?;
-    state_store::add_state_store_to_linker(&mut linker, |state: &mut HostState| &mut state.state)?;
-    secrets_store::add_secrets_store_to_linker(&mut linker, |state: &mut HostState| {
-        &mut state.secrets
-    })?;
+    wt(http_client::add_http_client_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.http,
+    ))?;
+    wt(oauth_broker::add_oauth_broker_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.oauth,
+    ))?;
+    wt(runner_host_http::add_runner_host_http_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.runner_http,
+    ))?;
+    wt(runner_host_kv::add_runner_host_kv_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.runner_kv,
+    ))?;
+    wt(telemetry_logger::add_telemetry_logger_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.telemetry,
+    ))?;
+    wt(state_store::add_state_store_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.state,
+    ))?;
+    wt(secrets_store::add_secrets_store_to_linker(
+        &mut linker,
+        |state: &mut HostState| &mut state.secrets,
+    ))?;
 
     // Ensure compat helper wires both @1.1.0 and legacy @1.0.0 worlds without duplicate registration.
     let mut compat_linker: Linker<HostState> = Linker::new(&engine);
-    http_client::add_http_client_compat_to_linker(&mut compat_linker, |state: &mut HostState| {
-        &mut state.http
-    })?;
+    wt(http_client::add_http_client_compat_to_linker(
+        &mut compat_linker,
+        |state: &mut HostState| &mut state.http,
+    ))?;
 
     // Also ensure add_all works on a fresh linker without duplicating entries.
     let mut linker_all: Linker<HostState> = Linker::new(&engine);
@@ -235,7 +251,7 @@ fn host_helpers_compile() -> Result<()> {
         secrets_store: Some(|state: &mut HostState| &mut state.secrets),
     };
 
-    greentic_interfaces_wasmtime::host_helpers::v1::add_all_v1_to_linker(&mut linker_all, fns)?;
+    wt(greentic_interfaces_wasmtime::host_helpers::v1::add_all_v1_to_linker(&mut linker_all, fns))?;
 
     Ok(())
 }

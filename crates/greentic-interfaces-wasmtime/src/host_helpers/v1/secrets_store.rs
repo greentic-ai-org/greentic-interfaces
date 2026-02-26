@@ -14,7 +14,7 @@ pub use bindings_v1_1::SecretsError as SecretsErrorV1_1;
 pub fn add_secrets_store_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn SecretsStoreHost,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:secrets-store/secrets-store@1.0.0")?;
     instance.func_wrap(
         "get",
@@ -32,7 +32,7 @@ pub fn add_secrets_store_to_linker<T>(
 pub fn add_secrets_store_v1_1_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn SecretsStoreHostV1_1,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut instance = linker.instance("greentic:secrets-store/secrets-store@1.1.0")?;
     instance.func_wrap(
         "get",
@@ -62,7 +62,7 @@ pub fn add_secrets_store_v1_1_to_linker<T>(
 pub fn add_secrets_store_compat_to_linker<T>(
     linker: &mut wasmtime::component::Linker<T>,
     get: fn(&mut T) -> &mut dyn SecretsStoreHostV1_1,
-) -> anyhow::Result<()> {
+) -> wasmtime::Result<()> {
     let mut inst_v1_1 = linker.instance("greentic:secrets-store/secrets-store@1.1.0")?;
     inst_v1_1.func_wrap(
         "get",
